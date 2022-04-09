@@ -1,0 +1,78 @@
+version: '3.8'
+services:
+  api-gateway:
+    image: raviranjan3570/api-gateway:1.0.0
+    ports:
+      - "8765:8765"
+    networks:
+      - currency-network
+    depends_on:
+      - naming-server
+    environment:
+      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka
+      SPRING.ZIPKIN.BASEURL: http://zipkin-server:9411
+      RABBIT_URI: amqp://guest:guest@rabbitmq:5672
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_ZIPKIN_SENDER_TYPE: rabbit
+
+  currency-conversion-service:
+    image: raviranjan3570/currency-conversion-service:1.0.0
+    ports:
+      - "8100:8100"
+    networks:
+      - currency-network
+    depends_on:
+      - currency-exchange-service
+    environment:
+      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka
+      SPRING.ZIPKIN.BASEURL: http://zipkin-server:9411
+      RABBIT_URI: amqp://guest:guest@rabbitmq:5672
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_ZIPKIN_SENDER_TYPE: rabbit
+
+  currency-exchange-service:
+    image: raviranjan3570/currency-exchange-service:1.0.0
+    ports:
+      - "8000:8000"
+    networks:
+      - currency-network
+    depends_on:
+      - api-gateway
+    environment:
+      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka
+      SPRING.ZIPKIN.BASEURL: http://zipkin-server:9411
+      RABBIT_URI: amqp://guest:guest@rabbitmq:5672
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_ZIPKIN_SENDER_TYPE: rabbit
+
+  naming-server:
+    image: raviranjan3570/naming-server:1.0.0
+    ports:
+      - "8761:8761"
+    networks:
+      - currency-network
+    depends_on:
+      - zipkin-server
+
+  rabbitmq:
+    image: rabbitmq:3.8.12-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - currency-network
+
+  zipkin-server:
+    image: openzipkin/zipkin:2.23
+    ports:
+      - "9411:9411"
+    networks:
+      - currency-network
+    depends_on:
+      - rabbitmq
+    environment:
+      RABBIT_URI: amqp://guest:guest@rabbitmq:5672
+    restart: always
+
+networks:
+  currency-network:
