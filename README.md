@@ -7,7 +7,7 @@ Microservice contains a set of [Spring Boot](https://spring.io/guides/gs/spring-
 1. git clone https://github.com/raviranjan3570/currency-conversion-microservices.git
 2. Make sure you have docker client installed in your system.
 3. cd microservices
-4. docker compose up
+4. docker-compose up
 ```
 ## Architecture
 <img width="1042" alt="todo-screenshot" src="https://github.com/raviranjan3570/microservices/blob/main/Microserives%20architecture.png">
